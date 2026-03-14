@@ -1,0 +1,45 @@
+# Docker Compose for Zoho-Parasut-Sync
+# Quick start: docker-compose up -d
+# Then open: http://localhost:8080
+
+services:
+  app:
+    build: .
+    container_name: zoho-parasut-sync
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./logs:/var/www/html/logs
+    environment:
+      - DB_HOST=db
+      - DB_NAME=zoho_parasut_sync
+      - DB_USER=zoho_sync
+      - DB_PASS=zoho_sync_password
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.6
+    container_name: zoho-parasut-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: zoho_parasut_sync
+      MYSQL_USER: zoho_sync
+      MYSQL_PASSWORD: zoho_sync_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  db_data:

@@ -1,0 +1,32 @@
+# Environment
+.env
+
+# Dependencies
+vendor/
+node_modules/
+
+# Logs
+logs/*.log
+logs/*.txt
+
+# Docker
+db_data/
+
+# PHPUnit
+.phpunit.result.cache
+.phpunit.cache/
+coverage/
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.swp
+*.bak
+*.old

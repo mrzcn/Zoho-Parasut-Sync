@@ -1,0 +1,53 @@
+{
+    "name": "nolto/zoho-parasut-sync",
+    "description": "Automated synchronization between Zoho CRM and Paraşüt (Turkish accounting software)",
+    "type": "project",
+    "license": "MIT",
+    "keywords": ["zoho", "zoho-crm", "parasut", "accounting", "erp", "sync", "invoice", "turkey"],
+    "homepage": "https://github.com/mrzcn/Zoho-Parasut-Sync",
+    "authors": [
+        {
+            "name": "Nolto",
+            "homepage": "https://github.com/mrzcn"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/mrzcn/Zoho-Parasut-Sync/issues",
+        "source": "https://github.com/mrzcn/Zoho-Parasut-Sync"
+    },
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
+    "autoload": {
+        "classmap": [
+            "classes/",
+            "controllers/",
+            "config/ServiceFactory.php"
+        ],
+        "files": [
+            "config/helpers/http.php",
+            "config/helpers/security.php",
+            "config/helpers/logging.php",
+            "config/helpers/settings.php",
+            "config/helpers/turkish.php",
+            "config/helpers/repository.php",
+            "config/helpers/rate_limit.php"
+        ]
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/"
+        ]
+    },
+    "scripts": {
+        "test": "phpunit --colors=always",
+        "test-coverage": "phpunit --coverage-text --colors=always"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}

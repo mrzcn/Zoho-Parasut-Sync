@@ -1,0 +1,43 @@
+# Nolto Sync Production .htaccess
+
+# 1. Prevent Directory Listing
+Options -Indexes
+
+# 2. Protect Sensitive Files
+<FilesMatch "\.(md|txt|log|sql|ini|csv|env)$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
+
+# Block install.php and .env access
+<FilesMatch "^(install\.php|\.env.*)$">
+    Require all denied
+</FilesMatch>
+
+# 3. Protect Config, Classes, Templates and Logs folders
+RewriteEngine On
+RewriteRule ^(config|classes|templates|logs|migrations|controllers|cron|vendor)/ - [F,L]
+
+# 4. Block Test/Debug Files
+<FilesMatch "^(debug_|verify_|check_|bulk_updater|update_product_codes).*\.php$">
+    Require all denied
+</FilesMatch>
+
+
+# 6. Enforce HTTPS (Production)
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# 7. Security Headers
+<IfModule mod_headers.c>
+    # X-XSS-Protection: deprecated in modern browsers, CSP below handles XSS
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.tailwindcss.com cdn.jsdelivr.net challenges.cloudflare.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src challenges.cloudflare.com;"
+</IfModule>
+
+# 8. PHP Settings (Optional, common for shared hosting)
+# php_value upload_max_filesize 64M
+# php_value post_max_size 64M
+# php_value max_execution_time 300
