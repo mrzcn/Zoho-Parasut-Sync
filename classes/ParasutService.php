@@ -187,7 +187,7 @@ class ParasutService
             }
 
             curl_close($ch);
-            writeLog("Paraşüt Response [$httpCode]");
+            writeLog("Paraşüt Response [$httpCode]", 'DEBUG', 'parasut');
 
             $result = json_decode($response, true);
 

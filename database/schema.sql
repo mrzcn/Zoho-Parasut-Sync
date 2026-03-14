@@ -67,6 +67,8 @@ CREATE TABLE IF NOT EXISTS `sync_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_email` varchar(255) DEFAULT NULL,
   `action_type` varchar(100) NOT NULL,
+  `resource_type` varchar(50) DEFAULT NULL,
+  `resource_id` varchar(100) DEFAULT NULL,
   `details` text DEFAULT NULL,
   `ip_address` varchar(45) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -101,7 +103,7 @@ CREATE TABLE IF NOT EXISTS `api_metrics` (
   KEY `idx_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS `job_queue` (
+CREATE TABLE IF NOT EXISTS `jobs` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `job_type` varchar(100) NOT NULL,
   `payload` longtext DEFAULT NULL,
@@ -109,11 +111,14 @@ CREATE TABLE IF NOT EXISTS `job_queue` (
   `attempts` int(11) NOT NULL DEFAULT 0,
   `max_attempts` int(11) NOT NULL DEFAULT 3,
   `error_message` text DEFAULT NULL,
+  `scheduled_at` timestamp NULL DEFAULT NULL,
+  `started_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `completed_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_status` (`status`),
-  KEY `idx_job_type` (`job_type`)
+  KEY `idx_job_type` (`job_type`),
+  KEY `idx_scheduled` (`scheduled_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- =============================================
@@ -230,8 +235,8 @@ CREATE TABLE IF NOT EXISTS `zoho_products` (
   `vat_rate` decimal(5,2) DEFAULT 0.00,
   `stock_quantity` decimal(15,2) DEFAULT 0.00,
   PRIMARY KEY (`id`),
-  KEY `idx_product_code` (`product_code`),
-  KEY `idx_zoho_id` (`zoho_id`)
+  UNIQUE KEY `idx_zoho_id` (`zoho_id`),
+  KEY `idx_product_code` (`product_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `zoho_invoices` (
@@ -279,6 +284,31 @@ CREATE TABLE IF NOT EXISTS `product_redirects` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_old_zoho` (`old_zoho_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- =============================================
+-- Invoice Mapping (Zoho ↔ Paraşüt)
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS `invoice_mapping` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `zoho_invoice_id` varchar(50) NOT NULL,
+  `parasut_invoice_id` varchar(50) NOT NULL,
+  `source` enum('zoho','parasut') NOT NULL DEFAULT 'parasut',
+  `zoho_invoice_number` varchar(100) DEFAULT NULL,
+  `parasut_invoice_number` varchar(100) DEFAULT NULL,
+  `parasut_e_invoice_id` varchar(50) DEFAULT NULL,
+  `parasut_e_archive_id` varchar(50) DEFAULT NULL,
+  `e_document_number` varchar(100) DEFAULT NULL,
+  `e_document_status` varchar(50) DEFAULT NULL,
+  `sync_status` varchar(20) DEFAULT 'pending',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_zoho_invoice` (`zoho_invoice_id`),
+  KEY `idx_parasut_invoice` (`parasut_invoice_id`),
+  KEY `idx_sync_status` (`sync_status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- =============================================

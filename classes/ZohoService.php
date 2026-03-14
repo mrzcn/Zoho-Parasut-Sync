@@ -45,7 +45,7 @@ class ZohoService
         // Zoho CRM API Base URL (v3)
         $this->baseUrl = "https://www.zohoapis.{$this->tld}/crm/v3";
 
-        writeLog("ZohoService Initialized. TLD: {$this->tld}, AuthURL: {$this->authUrl}, BaseURL: {$this->baseUrl}");
+        writeLog("ZohoService Initialized. TLD: {$this->tld}", 'DEBUG', 'zoho');
     }
 
     private function getAccessToken()
@@ -227,7 +227,7 @@ class ZohoService
 
     public function request($method, $endpoint, $data = [], $params = [])
     {
-        writeLog("API Request [$method] $endpoint");
+        writeLog("API Request [$method] $endpoint", 'DEBUG', 'zoho');
         $token = $this->getAccessToken();
         $requestStartTime = microtime(true);
 
@@ -237,7 +237,7 @@ class ZohoService
         }
 
         $url = $this->baseUrl . $endpoint . $queryString;
-        writeLog("Full URL: $url");
+        writeLog("Full URL: $url", 'DEBUG', 'zoho');
 
         $ch = curl_init($url);
         $headers = [
@@ -311,7 +311,7 @@ class ZohoService
 
         curl_close($ch);
 
-        writeLog("API Response [$httpCode]");
+        writeLog("API Response [$httpCode]", 'DEBUG', 'zoho');
 
         // Log API metrics (duration from start of first attempt)
         $durationMs = (int) ((microtime(true) - $requestStartTime) * 1000);

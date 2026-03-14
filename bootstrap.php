@@ -43,7 +43,12 @@ require_once __DIR__ . '/vendor/autoload.php';
 // Fallback autoloader — works without SSH when new classes are added
 // Kicks in when Composer classmap is not up to date
 spl_autoload_register(function ($class) {
-    $dirs = [__DIR__ . '/controllers/', __DIR__ . '/classes/', __DIR__ . '/config/'];
+    $dirs = [
+        __DIR__ . '/controllers/',
+        __DIR__ . '/classes/',
+        __DIR__ . '/classes/Exceptions/',
+        __DIR__ . '/config/',
+    ];
     foreach ($dirs as $dir) {
         $file = $dir . $class . '.php';
         if (file_exists($file)) {
@@ -59,3 +64,8 @@ require_once __DIR__ . '/config/helpers/rate_limit.php';
 
 // Database connection ($pdo global)
 require_once __DIR__ . '/config/database.php';
+
+// Initialize Logger singleton with PDO
+if (isset($pdo) && $pdo instanceof PDO) {
+    Logger::getInstance()->init($pdo);
+}

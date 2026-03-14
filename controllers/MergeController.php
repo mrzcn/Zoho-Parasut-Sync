@@ -384,12 +384,16 @@ class MergeController extends BaseController
                     $log[] = "  ⚠ PO ref taşınamadı: " . $e->getMessage();
                 }
 
-                // 1b. Move Zoho references in ALL modules via Related Records API
-                $moveResult = $this->moveProductReferences($zoho, $dupId, $masterId);
-                $invoicesMoved += $moveResult['invoices'];
-                $posMoved += $moveResult['pos'];
-                $affectedRecords = array_merge($affectedRecords, $moveResult['affected']);
-                $log = array_merge($log, $moveResult['log']);
+                // 1b. Move Zoho references in ALL modules via COQL
+                try {
+                    $moveResult = $this->moveProductReferences($zoho, $dupId, $masterId);
+                    $invoicesMoved += $moveResult['invoices'];
+                    $posMoved += $moveResult['pos'];
+                    $affectedRecords = array_merge($affectedRecords, $moveResult['affected']);
+                    $log = array_merge($log, $moveResult['log']);
+                } catch (\Exception $moveErr) {
+                    $log[] = "  ⚠ Referans taşıma atlandı: " . $moveErr->getMessage();
+                }
 
                 // 1c. Delete duplicate from Zoho (or deactivate if still involved in records)
                 try {

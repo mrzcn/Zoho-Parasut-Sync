@@ -49,7 +49,16 @@ jobs:
           php-version: '8.1'
           extensions: pdo, pdo_mysql, curl, json
 
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
       - name: Check PHP syntax
         run: |
           find . -name "*.php" -not -path "./vendor/*" | xargs -I {} php -l {} | grep -v "No syntax errors"
           echo "✅ All PHP files have valid syntax"
+
+      - name: Run PHPStan (Level 1)
+        run: |
+          composer require --dev phpstan/phpstan:^1.0 --no-interaction
+          vendor/bin/phpstan analyse classes/ controllers/ config/ --level=1 --no-progress || true
+
