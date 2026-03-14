@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7] - 2026-03-14
+
+### Added
+- 🏗️ `ApiClient` abstract base class — shared HTTP client with retry, rate limit, and metric logging
+- 🚨 Custom Exception hierarchy (`ZohoApiException`, `ParasutApiException`, `ConnectionException`, etc.)
+- 📝 `Logger` singleton — replaces `global $pdo` dependency, supports log level filtering (DEBUG/INFO/WARNING/ERROR)
+- 🗃️ Database migration system (`database/migrate.php` + `database/migrations/`)
+- 🔍 PHPStan Level 1 static analysis added to CI pipeline
+- 📋 `invoice_mapping` table for Zoho ↔ Paraşüt invoice tracking
+
+### Changed
+- Verbose API request logs moved from INFO to DEBUG level (reduces ~80% log noise)
+- Schema: `job_queue` table renamed to `jobs` (matches `Queue.php`)
+- Schema: `zoho_products.zoho_id` now UNIQUE (prevents duplicates)
+- Schema: `sync_history` table now includes `resource_type` and `resource_id` columns
+- `.env.example` updated with API credential placeholders
+- Autoloader now supports subdirectory scanning (`classes/Exceptions/`)
+- `writeLog()` function delegates to Logger singleton (backward compatible)
+
+### Fixed
+- Schema/code mismatch: `job_queue` table name vs `jobs` in Queue.php
+- Missing `scheduled_at` and `started_at` columns in jobs table
+- Missing `invoice_mapping` table (used by SyncService but not in schema)
+
 ## [2.6] - 2026-03-14
 
 ### Added
@@ -80,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic Paraşüt product sync to Zoho CRM
 - Simple admin panel
 
+[2.7]: https://github.com/mrzcn/Zoho-Parasut-Sync/compare/v2.6...v2.7
 [2.6]: https://github.com/mrzcn/Zoho-Parasut-Sync/compare/v2.4...v2.6
 [2.4]: https://github.com/mrzcn/Zoho-Parasut-Sync/compare/v2.3...v2.4
 [2.3]: https://github.com/mrzcn/Zoho-Parasut-Sync/compare/v2.2...v2.3
@@ -87,3 +112,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [2.1]: https://github.com/mrzcn/Zoho-Parasut-Sync/compare/v2.0...v2.1
 [2.0]: https://github.com/mrzcn/Zoho-Parasut-Sync/compare/v1.0...v2.0
 [1.0]: https://github.com/mrzcn/Zoho-Parasut-Sync/releases/tag/v1.0
+

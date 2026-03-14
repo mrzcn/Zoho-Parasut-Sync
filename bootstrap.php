@@ -3,7 +3,7 @@
 // All PHP files include only this file
 
 // Application version — used for cache busting after deploy
-define('APP_VERSION', '2.6');
+define('APP_VERSION', '2.7');
 
 // Production error handling
 ini_set('display_errors', 0);
