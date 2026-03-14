@@ -205,42 +205,116 @@ See [CHANGELOG.md](CHANGELOG.md) for a detailed version history.
 
 ## 🇹🇷 Türkçe
 
+**Zoho CRM ile Paraşüt muhasebe yazılımı arasında otomatik senkronizasyon.**
+
+### Özellikler
+
+| Özellik | Açıklama |
+|---------|----------|
+| 📦 **Ürün Senkronizasyonu** | Paraşüt ürünlerini Zoho CRM'e otomatik aktarım |
+| 🧾 **Fatura Senkronizasyonu** | Satış faturalarını iki yönlü eşleştirme |
+| 📋 **Gider Faturası Aktarımı** | Satın alma siparişlerini Zoho'ya aktarma |
+| 🔍 **Mükerrer Ürün Tespiti** | Ürün koduna göre duplike algılama ve birleştirme |
+| 🔄 **İlişkili Kayıt Güncelleme** | Birleştirmede fatura/teklif/sipariş referansları otomatik taşınır |
+| 📊 **Dashboard** | Anlık senkronizasyon durumu, API metrikleri, kuyruk yönetimi |
+| 🔐 **Güvenlik** | CSRF koruması, rate limiting, brute-force koruması, Turnstile |
+| 🪝 **Webhook Desteği** | Paraşüt ve Zoho webhook'ları ile gerçek zamanlı tetikleme |
+| ⏰ **Cron Desteği** | Zamanlanmış otomatik senkronizasyon ve iş kuyruğu |
+| 📝 **Detaylı Log** | Tüm işlemler veritabanına loglanır, tokenlar otomatik maskelenir |
+
 ### Hızlı Kurulum
+
+#### Yöntem 1: Docker (Önerilen)
 
 ```bash
 git clone https://github.com/mrzcn/Zoho-Parasut-Sync.git
 cd Zoho-Parasut-Sync
 docker-compose up -d
-# veya: composer install → install.php'yi tarayıcıda açın
 ```
 
-### Özellikler
+Tarayıcıda **http://localhost:8080** adresini açın ve kurulum sihirbazını takip edin.
 
-- 📦 **Ürün Senkronizasyonu** — Paraşüt ürünlerini Zoho CRM'e otomatik aktarım
-- 🧾 **Fatura Senkronizasyonu** — Satış faturalarını iki yönlü eşleştirme
-- 📋 **Gider Faturası Aktarımı** — Satın alma siparişlerini Zoho'ya aktarma
-- 🔍 **Mükerrer Ürün Tespiti** — Ürün koduna göre duplike algılama ve birleştirme
-- 📊 **Dashboard** — Anlık durum, API metrikleri, kuyruk yönetimi
-- 🔐 **Güvenlik** — CSRF, rate limiting, brute-force, Cloudflare Turnstile
-- 🪝 **Webhook / Cron** — Gerçek zamanlı ve zamanlanmış senkronizasyon
+#### Yöntem 2: Manuel Kurulum
+
+```bash
+git clone https://github.com/mrzcn/Zoho-Parasut-Sync.git
+cd Zoho-Parasut-Sync
+composer install
+```
+
+1. Hosting panelinizden (cPanel vb.) yeni bir MySQL veritabanı ve kullanıcı oluşturun
+2. Tarayıcıda `https://siteadi.com/Zoho-Parasut-Sync/install.php` adresini açın
+3. Kurulum sihirbazını takip edin:
+   - **Adım 1:** Veritabanı bağlantısı (host, ad, kullanıcı, şifre)
+   - **Adım 2:** Tablo oluşturma (15 tablo otomatik oluşturulur)
+   - **Adım 3:** Admin şifresi belirleme
+
+### Gereksinimler
+
+| Gereksinim | Minimum |
+|-----------|---------|
+| PHP | 7.4+ |
+| MySQL / MariaDB | 5.7+ / 10.4+ |
+| PHP Eklentileri | PDO, cURL, JSON |
+| Composer | 2.x |
+
+### 🐳 Docker
+
+```bash
+# Başlat
+docker-compose up -d
+
+# Logları izle
+docker-compose logs -f app
+
+# Durdur
+docker-compose down
+
+# Sıfırla (veritabanını da sil)
+docker-compose down -v
+```
 
 ### Zoho CRM API Kurulumu
 
-1. [Zoho API Console](https://api-console.zoho.com/) → **Self Client** oluşturun
-2. Scope: `ZohoCRM.modules.ALL,ZohoCRM.settings.ALL,ZohoCRM.org.ALL`
-3. Grant Token'ı Ayarlar sayfasına yapıştırın
+1. [Zoho API Console](https://api-console.zoho.com/) adresine gidin
+2. **Self Client** oluşturun
+3. Scope: `ZohoCRM.modules.ALL,ZohoCRM.settings.ALL,ZohoCRM.org.ALL`
+4. Oluşturulan **Grant Token**'ı Ayarlar sayfasındaki ilgili alana yapıştırın
+5. "Refresh Token Oluştur" butonuna tıklayın
 
 ### Paraşüt API Kurulumu
 
-1. [Paraşüt API](https://api.parasut.com/) → Uygulama oluşturun
-2. Client ID, Client Secret, Şirket ID bilgilerini girin
+1. [Paraşüt API](https://api.parasut.com/) adresinden uygulama oluşturun
+2. Client ID, Client Secret ve Şirket ID bilgilerini Ayarlar'a girin
+3. Paraşüt kullanıcı adı ve şifrenizi girin
 
-### Vergi Haritası
+### 🔒 Güvenlik
 
-Ayarlar sayfasından Zoho CRM'deki vergi ID'lerini Paraşüt KDV oranlarıyla eşleştirin.
+| Katman | Uygulama |
+|--------|----------|
+| Kimlik Doğrulama | `password_hash` / `password_verify` |
+| CSRF Koruması | Oturum bazlı token, `hash_equals` doğrulama |
+| Hız Sınırlama | Dosya tabanlı kayan pencere |
+| Kaba Kuvvet | 5 denemeden sonra IP bazlı kilitleme |
+| CAPTCHA | Cloudflare Turnstile (isteğe bağlı) |
+| API Kimlik Bilgileri | Veritabanında saklanır, kaynak kodda asla yer almaz |
+| Log Maskeleme | Tokenlar tüm log çıktısında otomatik maskelenir |
+| Oturum | HttpOnly, SameSite=Lax, Secure çerezler |
+
+### 🧪 Test
+
+```bash
+composer install
+composer test
+```
+
+### 🤝 Katkıda Bulunma
+
+Katkılarınızı bekliyoruz! PR göndermeden önce [Katkı Kılavuzu](CONTRIBUTING.md)'nu okuyun.
 
 ---
 
-## 📄 License
+## 📄 Lisans / License
 
 [MIT License](LICENSE) — Copyright (c) 2026 Nolto
+
