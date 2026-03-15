@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8] - 2026-03-15
+
+### Added
+- 🧩 **Trait-based architecture** — Service sınıfları mantıksal parçalara ayrıldı:
+  - `ZohoAuthTrait` — OAuth2 token yönetimi, authorization code exchange, DB-level lock
+  - `ZohoProductsTrait` — Ürün CRUD, arama, toplu işlem, vergi yönetimi
+  - `ZohoInvoicesTrait` — Fatura/sipariş CRUD, e-fatura, e-arşiv, satıcı yönetimi
+  - `ParasutAuthTrait` — OAuth2 password-grant token yönetimi
+  - `ParasutProductsTrait` — Ürün listeleme, güncelleme, arşiv, stok yönetimi
+  - `ParasutInvoicesTrait` — Satış faturası, alış faturası, e-belge, contact yönetimi
+- 📝 Tüm trait metotlarına **PHP type hints** ve **PHPDoc** eklendi
+
+### Changed
+- ♻️ `ProductController`: 3 tekrarlanan metot (`_lite` ve `_in_both_systems`) artık canonical versiyonlarına delege ediyor (~150 satır tekrar kaldırıldı)
+- 🌐 **Hata mesajı tutarlılığı**: Tüm kullanıcıya gösterilen mesajlar Türkçe olarak standardize edildi
+  - `Queue.php`: "Unknown job type" → "Bilinmeyen iş tipi"
+  - `ZohoService.php`: "Unknown error" → "Bilinmeyen hata"
+- 📂 Autoloader `classes/Zoho/` ve `classes/Parasut/` alt dizinlerini destekliyor
+
+### Architecture
+- Trait yapısı mevcut `ZohoService` ve `ParasutService` sınıflarını **kırmaz**
+- Her trait bağımsız olarak `use` edilebilir veya ileride servisler parçalandığında kompozisyon için kullanılabilir
+- Tekrarlanan `_lite` metotları `@deprecated` olarak işaretlendi
+
 ## [2.7] - 2026-03-14
 
 ### Added
@@ -104,6 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic Paraşüt product sync to Zoho CRM
 - Simple admin panel
 
+[2.8]: https://github.com/mrzcn/Zoho-Parasut-Sync/compare/v2.7...v2.8
 [2.7]: https://github.com/mrzcn/Zoho-Parasut-Sync/compare/v2.6...v2.7
 [2.6]: https://github.com/mrzcn/Zoho-Parasut-Sync/compare/v2.4...v2.6
 [2.4]: https://github.com/mrzcn/Zoho-Parasut-Sync/compare/v2.3...v2.4

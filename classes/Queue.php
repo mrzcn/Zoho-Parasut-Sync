@@ -165,7 +165,7 @@ class Queue
                     break;
 
                 default:
-                    throw new Exception("Unknown job type: $jobType");
+                    throw new Exception("Bilinmeyen iş tipi: $jobType");
             }
 
             self::markCompleted($pdo, $jobId);

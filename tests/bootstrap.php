@@ -6,7 +6,7 @@
 
 // Define test mode
 define('TESTING', true);
-define('APP_VERSION', '2.7-test');
+define('APP_VERSION', '2.8-test');
 
 // Error reporting
 error_reporting(E_ALL);

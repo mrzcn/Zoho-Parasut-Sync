@@ -493,26 +493,19 @@ class ProductController extends BaseController
         }
     }
 
+    /**
+     * @deprecated Use update_parasut_product() instead
+     */
     public function update_parasut_product_lite(): void
     {
-        $pId = $this->input('parasut_id');
-        $code = $this->input('product_code', '');
-
-        if (!$pId)
-            jsonResponse(['success' => false, 'message' => 'Ürün ID eksik.'], 400);
-
-        try {
-            $res = $this->parasut()->updateProduct($pId, ['code' => $code]);
-            if (isset($res['data']['id'])) {
-                $this->pdo->prepare("UPDATE parasut_products SET product_code = ? WHERE parasut_id = ?")->execute([$code, $pId]);
-                jsonResponse(['success' => true, 'message' => 'Ürün kodu güncellendi.']);
-            } else {
-                $err = $res['errors'][0]['detail'] ?? 'Bilinmeyen API Hatası';
-                jsonResponse(['success' => false, 'message' => "Paraşüt API Hatası: $err"], 500);
-            }
-        } catch (Exception $e) {
-            jsonResponse(['success' => false, 'message' => 'Exception: ' . $e->getMessage()], 500);
+        // Backward compatible: map parameter names and delegate
+        if (!isset($_POST['id']) && isset($_POST['parasut_id'])) {
+            $_POST['id'] = $_POST['parasut_id'];
         }
+        if (!isset($_POST['code']) && isset($_POST['product_code'])) {
+            $_POST['code'] = $_POST['product_code'];
+        }
+        $this->update_parasut_product();
     }
 
     public function update_zoho_product(): void
@@ -542,120 +535,41 @@ class ProductController extends BaseController
         }
     }
 
+    /**
+     * @deprecated Use update_zoho_product() instead
+     */
     public function update_zoho_product_lite(): void
     {
-        $zId = $this->input('zoho_id');
-        $code = $this->input('product_code', '');
-
-        if (!$zId)
-            jsonResponse(['success' => false, 'message' => 'Ürün ID eksik.'], 400);
-
-        try {
-            $res = $this->zoho()->updateProduct($zId, ['Product_Code' => $code]);
-
-            $isSuccess = isset($res['data'][0]['status']) && ($res['data'][0]['status'] === 'success' || $res['data'][0]['code'] === 'SUCCESS');
-
-            if ($isSuccess) {
-                $this->pdo->prepare("UPDATE zoho_products SET product_code = ? WHERE zoho_id = ?")->execute([$code, $zId]);
-                jsonResponse(['success' => true, 'message' => 'Zoho ürün kodu güncellendi.']);
-            } else {
-                $errCode = $res['data'][0]['code'] ?? '';
-                $errMsg = $res['data'][0]['message'] ?? 'Bilinmeyen API Hatası';
-                if ($errCode === 'DUPLICATE_DATA') {
-                    jsonResponse(['success' => false, 'message' => "Bu Ürün Kodu ($code) Zoho'da başka bir üründe zaten kullanılıyor!"], 409);
-                }
-                jsonResponse(['success' => false, 'message' => "Zoho API Hatası: $errMsg"], 500);
-            }
-        } catch (Exception $e) {
-            jsonResponse(['success' => false, 'message' => 'Exception: ' . $e->getMessage()], 500);
+        // Backward compatible: map parameter names and delegate
+        if (!isset($_POST['id']) && isset($_POST['zoho_id'])) {
+            $_POST['id'] = $_POST['zoho_id'];
         }
+        if (!isset($_POST['code']) && isset($_POST['product_code'])) {
+            $_POST['code'] = $_POST['product_code'];
+        }
+        $this->update_zoho_product();
     }
 
+    /**
+     * @deprecated Use update_product_unified() instead
+     */
     public function update_product_in_both_systems(): void
     {
-        $zohoId = $this->input('zoho_id');
-        $parasutId = $this->input('parasut_id');
-        $productCode = $this->input('product_code');
-        $productName = $this->input('product_name');
-        $currency = $this->input('currency', 'TRY');
-        $salePrice = $this->input('sale_price', 0);
-        $purchasePrice = $this->input('purchase_price', 0);
-        $taxRate = $this->input('tax_rate', 18);
-        $stockQuantity = $this->input('stock_quantity', 0);
-        $isArchived = $this->input('is_archived', '0') === '1';
-
-        if (!$productCode || !$productName)
-            jsonResponse(['success' => false, 'message' => 'Ürün kodu ve adı gerekli.'], 400);
-
-        try {
-            $errors = [];
-            $successes = [];
-
-            if ($zohoId) {
-                try {
-                    $zohoData = [
-                        'Product_Code' => $productCode,
-                        'Product_Name' => $productName,
-                        'Unit_Price' => (float) $salePrice,
-                        'Purchase_Price' => (float) $purchasePrice,
-                        'Currency' => $currency,
-                        'Tax' => (float) $taxRate,
-                        'Qty_in_Stock' => (int) $stockQuantity
-                    ];
-                    $result = $this->zoho()->updateProduct($zohoId, $zohoData);
-
-                    if (isset($result['data'][0]['status']) && ($result['data'][0]['status'] === 'success' || $result['data'][0]['code'] === 'SUCCESS')) {
-                        $successes[] = 'Zoho güncellendi';
-                        $this->pdo->prepare("UPDATE zoho_products SET product_code = ?, product_name = ?, unit_price = ?, currency = ?, purchase_price = ?, tax = ?, quantity_in_stock = ?, updated_at = NOW() WHERE zoho_id = ?")
-                            ->execute([$productCode, $productName, $salePrice, $currency, $purchasePrice, $taxRate, $stockQuantity, $zohoId]);
-                    } else {
-                        $errors[] = 'Zoho: ' . ($result['data'][0]['message'] ?? 'Bilinmeyen hata');
-                    }
-                } catch (Exception $e) {
-                    $errors[] = 'Zoho hatası: ' . $e->getMessage();
-                }
+        // Map parameter names for backward compatibility
+        $mappings = [
+            'product_code' => 'product_code',
+            'product_name' => 'name',
+            'sale_price'   => 'price',
+            'purchase_price' => 'buying_price',
+            'tax_rate'     => 'vat_rate',
+            'stock_quantity' => 'stock_quantity',
+        ];
+        foreach ($mappings as $old => $new) {
+            if (isset($_POST[$old]) && !isset($_POST[$new])) {
+                $_POST[$new] = $_POST[$old];
             }
-
-            if ($parasutId) {
-                try {
-                    if ($isArchived)
-                        $this->parasut()->unarchiveProduct($parasutId);
-
-                    $parasutData = [
-                        'code' => $productCode,
-                        'name' => $productName,
-                        'unit_price' => (float) $salePrice,
-                        'list_price' => (float) $purchasePrice,
-                        'currency' => $currency,
-                        'vat_rate' => (int) $taxRate,
-                        'initial_stock_count' => (int) $stockQuantity
-                    ];
-                    $result = $this->parasut()->updateProduct($parasutId, $parasutData);
-
-                    if ($result) {
-                        $successes[] = 'Paraşüt güncellendi';
-                        $this->pdo->prepare("UPDATE parasut_products SET code = ?, name = ?, unit_price = ?, currency = ?, list_price = ?, vat_rate = ?, initial_stock_count = ?, updated_at = NOW() WHERE parasut_id = ?")
-                            ->execute([$productCode, $productName, $salePrice, $currency, $purchasePrice, $taxRate, $stockQuantity, $parasutId]);
-                        if ($isArchived)
-                            $this->parasut()->archiveProduct($parasutId);
-                    } else {
-                        $errors[] = 'Paraşüt güncellenemedi';
-                    }
-                } catch (Exception $e) {
-                    $errors[] = 'Paraşüt hatası: ' . $e->getMessage();
-                }
-            }
-
-            if (count($errors) > 0 && count($successes) === 0) {
-                jsonResponse(['success' => false, 'message' => implode(', ', $errors)], 400);
-            } elseif (count($errors) > 0) {
-                jsonResponse(['success' => true, 'message' => implode(', ', $successes) . ' (Uyarılar: ' . implode(', ', $errors) . ')']);
-            } else {
-                jsonResponse(['success' => true, 'message' => implode(', ', $successes)]);
-            }
-        } catch (Exception $e) {
-            jsonResponse(['success' => false, 'message' => 'Sistem hatası: ' . $e->getMessage()], 500);
         }
+        $this->update_product_unified();
     }
 
     public function update_price_in_zoho(): void

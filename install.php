@@ -563,7 +563,7 @@ if ($step === 1 && $envExists) {
         </div>
 
         <p style="text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem;">
-            Zoho-Parasut-Sync v2.7 — Kurulum Sihirbazı
+            Zoho-Parasut-Sync v2.8 — Kurulum Sihirbazı
         </p>
     </div>
 </body>

@@ -3,7 +3,7 @@
 // All PHP files include only this file
 
 // Application version — used for cache busting after deploy
-define('APP_VERSION', '2.7');
+define('APP_VERSION', '2.8');
 
 // Production error handling
 ini_set('display_errors', 0);
@@ -47,6 +47,8 @@ spl_autoload_register(function ($class) {
         __DIR__ . '/controllers/',
         __DIR__ . '/classes/',
         __DIR__ . '/classes/Exceptions/',
+        __DIR__ . '/classes/Zoho/',
+        __DIR__ . '/classes/Parasut/',
         __DIR__ . '/config/',
     ];
     foreach ($dirs as $dir) {

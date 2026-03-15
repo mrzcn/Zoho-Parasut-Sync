@@ -1355,7 +1355,7 @@ class ZohoService
                 if (isset($res['status']) && ($res['status'] === 'success' || $res['code'] === 'SUCCESS')) {
                     $successCount++;
                 } else {
-                    $errors[] = $res['message'] ?? 'Unknown error';
+                    $errors[] = $res['message'] ?? 'Bilinmeyen hata';
                 }
             }
 
@@ -1411,7 +1411,7 @@ class ZohoService
                 if (isset($res['status']) && ($res['status'] === 'success' || $res['code'] === 'SUCCESS')) {
                     $successCount++;
                 } else {
-                    $errors[] = $res['message'] ?? 'Unknown error';
+                    $errors[] = $res['message'] ?? 'Bilinmeyen hata';
                 }
             }
 
